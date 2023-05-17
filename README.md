@@ -121,7 +121,7 @@ To use BardAPI
     F12 for console
     Session: Application → Cookies → Copy the value of __Secure-1PSID cookie.
 
-And put the api, with the period included, in the .env file. 
+Put the api, with period inclided, in the .env file, and enable it in the consts.py file.
 
 # Examples
 ```
