@@ -2,11 +2,11 @@
  Babyagi, an Autonomous and Self-Improving agent. Nicknamed Christine, after Christine Brown. 
 </h1>
 
+# Last changes
+I implimented Bard API for free LLM api usage, made it possible to enable or disable it depending on prefrence. 
 
 
 # planned changes
-
-Implement bard api
 
 Implement llama cpp
 
@@ -52,13 +52,6 @@ Impliment bing chat API
 
 Current goal, have it play a successful game of Stellaris all by itself. 
 
-
-
-# Last changes
-
-The main changes are that now you can easily enable/disable/add the execution_agent tools, you can choose the amount of n-shots the agent will receive in its prompt, if the agent will keep running in continuous mode even with the list of empty tasks, and pinecone and serp are not activated by default.
-
-This repository will soon be updated to be compatible with the latest commits from the original babyagi.
 
 
 # Objective
