@@ -115,6 +115,14 @@ To use the script, you will need to follow these steps:
 8. Set the task_list of the system in the TASK_LIST variable.
 9. Run python main.py
 
+To use BardAPI
+
+    Visit https://bard.google.com/
+    F12 for console
+    Session: Application → Cookies → Copy the value of __Secure-1PSID cookie.
+
+And put the api, with the period included, in the .env file. 
+
 # Examples
 ```
 OBJECTIVE=I need to complete the first task
