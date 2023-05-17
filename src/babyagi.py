@@ -61,21 +61,21 @@ class AutonomousAgent:
             print(f"\nChosen one-shot example: {completion}\n")
             one_shot_example_names = completion[:consts.N_SHOT] if len(completion) > 0 else None
             prompt = prompts.execution_agent(
-                    self.objective,
-                    self.completed_tasks,
-                    self.get_current_state,
-                    current_task,
-                    [one_shot for one_shot in all_one_shots if one_shot["memory_id"] in one_shot_example_names] if one_shot_example_names is not None else '',
-                    self.task_list
-                )
+                self.objective,
+                self.completed_tasks,
+                self.get_current_state,
+                current_task,
+                [one_shot for one_shot in all_one_shots if one_shot["memory_id"] in one_shot_example_names] if one_shot_example_names is not None else '',
+                self.task_list
+            )
             # print(Fore.LIGHTCYAN_EX + prompt + Fore.RESET)
             changes = bard_api_call(
                 prompt,
                 .5,
-                4000-self.count_tokens(prompt),
+                4000 - self.count_tokens(prompt),
             )
 
-            print(Fore.LIGHTMAGENTA_EX+f"\n\ncodename ExecutionAgent:"+Fore.RESET+f"\n\n{changes}")
+            print(Fore.LIGHTMAGENTA_EX + f"\n\ncodename ExecutionAgent:" + Fore.RESET + f"\n\n{changes}")
 
             # try until complete
             result, code, cot = self.repl_agent(current_task, changes)
@@ -92,34 +92,12 @@ class AutonomousAgent:
             if save_task:
                 one_shots.append(
                     {
-                        "memory_id": "os-{0:09d}".format(len(one_shots)+1),
+                        "memory_id": "os-{0:09d}".format(len(one_shots) + 1),
                         "objective": self.objective,
                         "task": current_task,
-                        "thoughts": cot[cot.lower().index('chain of thoughts:')+18:cot.lower().index('answer:')].strip(),
-                        "code": code.strip().strip('\n\n'),
-                        "keywords": ', '.join(eval(bard_api_call("I must analyze the following task name and action and write a list of keywords.\n"
-                                    f"Task name: {current_task};\nAction: {code};\n\n"
-                                    f"> I must write a python list cointaing strings, each string one relevant keyword that will be used by ExecutionAgent to retrieve this memories when needed."
-                                                     f" i.e: ['search', 'using pyautogui', 'using execution_agent', 'how to x', 'do y']\n"
-                                    f"My answer:", max_tokens=2000)))
+                        "thoughts": cot[cot.lower().index('chain of thoughts:') + 18:cot.lower().index('answer')].strip()
                     }
                 )
-                with open("memories/one-shots.json", 'w') as f:
-                    f.write(json.dumps(one_shots, indent=True, ensure_ascii=False))
-
-        else:
-            cot, code = [[o['thoughts'], o['code']] for o in one_shots if o['task'] == current_task][0]
-            print(Fore.LIGHTMAGENTA_EX + f"\n\ncodename ExecutionAgent:" + Fore.RESET + f"\nChain of thoughts: {cot}\n\nAnswer:\n{code}")
-            action_func = exec(code, self.__dict__)
-            result = self.action(self)
-
-        self.completed_tasks.append(current_task)
-        summarizer_prompt = f"I must summarize the 'working memory' and the last events, I must answer as a chain of thoughts, in first person, in the same verb tense of the 'event'. Working memory: {self.working_memory}, event: {cot} result: {result}. " \
-                            f"My answer must include the past workig memory and the new events and thoughts. If there's some error or fix in the event I must summarize it as a learning:"
-        self.working_memory = bard_api_call(summarizer_prompt)
-
-        return result
-
     def repl_agent(self, current_task, changes):
         code = changes
         ct = 1
@@ -137,7 +115,7 @@ class AutonomousAgent:
                 prompt = prompts.fix_agent(current_task, code, "", e)
                 new_code = bard_api_call(prompt)
                 reasoning += new_code
-                reasoning = openai_call(f"I must summarize this past events as a chain of thoughts, in first person: {reasoning}", max_tokens=1000)
+                reasoning = bard_api_call(f"I must summarize this past events as a chain of thoughts, in first person: {reasoning}", max_tokens=1000)
             
                 try:
                     code = new_code
@@ -156,6 +134,17 @@ class AutonomousAgent:
             0.7,
             1000,
         )
+
+    def recursion_agent(self, current_task):
+        code = prompts.recursion_agent(current_task)  # Replace with the appropriate prompt for recursion_agent
+        suggested_improvements = bard_api_call(code)  # Make API call to retrieve suggested improvements
+    
+    # Print the critiques from the recursion_agent
+        print("Recursion Agent Critiques:")
+        print(suggested_improvements)
+    
+        return suggested_improvements
+
 
     def memory_agent(self, caller,  content, goal):
         answer = bard_api_call(
